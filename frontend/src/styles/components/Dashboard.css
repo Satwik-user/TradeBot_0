@@ -1,0 +1,68 @@
+/* Dashboard component styles */
+.dashboard-container {
+  margin-top: 20px;
+}
+
+.chart-section {
+  height: 600px;
+}
+
+.chart-section .card-body {
+  padding: 10px;
+}
+
+.command-section .card-body {
+  padding: 15px;
+}
+
+.command-display {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.command-item {
+  margin-bottom: 10px;
+}
+
+.command-item:last-child {
+  margin-bottom: 0;
+}
+
+.command-item strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #6c757d;
+}
+
+.command-item p {
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.command-item.response p {
+  background-color: #e3f2fd;
+}
+
+.market-summary .table {
+  margin-bottom: 0;
+}
+
+.market-summary .table td,
+.market-summary .table th {
+  vertical-align: middle;
+  padding: 8px 12px;
+}
+
+.trade-history .table {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+  .chart-section {
+    height: 400px;
+  }
+}
