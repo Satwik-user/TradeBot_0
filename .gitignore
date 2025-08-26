@@ -13,12 +13,12 @@ __pycache__/
 *$py.class
 *.so
 .env
-/database/venv/ 
 /backend/venv/
 /backend/.env
 /backend/*.log
 
 # Database
+/database/venv/
 *.sqlite
 *.db
 
