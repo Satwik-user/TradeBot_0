@@ -8,7 +8,7 @@ import TradeHistory from './TradeHistory';
 import { AppContext } from '../context/AppContext';
 import '../styles/components/Dashboard.css';
 
-const Dashboard = () => {
+const Dashboard = (props) => {
   const { command, response, trades, loading } = useContext(AppContext);
 
   return (

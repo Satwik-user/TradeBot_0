@@ -4,7 +4,12 @@ import { getMarketData } from '../services/apiService';
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // Initialize user from localStorage (only on first render)
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('demoUser');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
   const [marketData, setMarketData] = useState({});
   const [isListening, setIsListening] = useState(false);
   const [command, setCommand] = useState('');
@@ -13,7 +18,7 @@ export const AppProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [trades, setTrades] = useState([]);
 
-  // Load user from localStorage on initial render
+  // Keep user state in sync with localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('demoUser');
     if (storedUser) {
@@ -21,7 +26,7 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch initial market data
+  // Fetch initial market data and update every 30 seconds
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
@@ -45,7 +50,6 @@ export const AppProvider = ({ children }) => {
 
     fetchMarketData();
 
-    // Update market data every 30 seconds
     const interval = setInterval(fetchMarketData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -75,6 +79,6 @@ export const AppProvider = ({ children }) => {
       addTrade
     }}>
       {children}
-    </AppContext.Provider>
+      </AppContext.Provider>
   );
 };
