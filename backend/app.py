@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import logging
+from datetime import datetime
 
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,7 +16,7 @@ from controllers.trade_controller import router as trade_router
 from controllers.auth_controller import router as auth_router
 
 # Import database connector
-from database.db_connector import get_db_connection
+from database.db_connector import get_db_connection, test_connection
 
 # Set up logging
 logging.basicConfig(
@@ -41,6 +42,52 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Application startup event"""
+    logger.info("Starting TradeBot API server...")
+    
+    # Test database connection
+    if test_connection():
+        logger.info("✅ Database connection verified")
+    else:
+        logger.error("❌ Database connection failed")
+        raise Exception("Cannot start server: Database connection failed")
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "TradeBot Voice Trading Assistant API",
+        "version": "1.0.0",
+        "status": "running",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/healthcheck")
+async def healthcheck():
+    """Health check endpoint"""
+    try:
+        db_status = test_connection()
+        
+        return {
+            "status": "healthy" if db_status else "unhealthy",
+            "database": "connected" if db_status else "disconnected",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+
 
 # Request logging middleware
 @app.middleware("http")
@@ -104,4 +151,5 @@ async def healthcheck():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("API_PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

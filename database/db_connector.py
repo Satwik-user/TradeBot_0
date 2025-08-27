@@ -14,7 +14,7 @@ logger = logging.getLogger("tradebot.database")
 # Database connection parameters
 DB_PARAMS = {
     "dbname": os.getenv("DB_NAME", "tradebot"),
-    "user": os.getenv("DB_USER", "postgres"),
+    "user": os.getenv("DB_USER", "tradebot_user"),
     "password": os.getenv("DB_PASSWORD", "postgres"),
     "host": os.getenv("DB_HOST", "localhost"),
     "port": os.getenv("DB_PORT", "5432")
@@ -129,3 +129,20 @@ def init_db():
     except Exception as e:
         logger.error(f"Error reading schema file: {e}", exc_info=True)
         raise
+
+def test_connection():
+    """Test database connection"""
+    try:
+        result = execute_query("SELECT 'Connection successful!' AS message", fetch_all=False)
+        logger.info(f"Database test: {result['message']}")
+        return True
+    except Exception as e:
+        logger.error(f"Database connection test failed: {e}")
+        return False
+
+if __name__ == "__main__":
+    # Test the connection when run directly
+    if test_connection():
+        print("✅ Database connection successful!")
+    else:
+        print("❌ Database connection failed!")
