@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import TradingViewChart from './TradingViewChart';
 import MarketSummary from './MarketSummary';
 import TradeForm from './TradeForm';
-import VoiceRecognition from './VoiceRecognition';
+import VoiceAssistant from './VoiceAssistant';
 import CommandExamples from './CommandExamples';
 import TradeHistory from './TradeHistory';
 import { AppContext } from '../context/AppContext';
@@ -20,14 +20,14 @@ const Dashboard = (props) => {
               <h3>Market Chart</h3>
               {loading && <div className="spinner-border spinner-border-sm text-primary" role="status"></div>}
             </div>
-            <div className="card-body">
+            <div className="card-body" style={{ height: '600px', padding: '0' }}>
               <TradingViewChart />
             </div>
           </div>
         </div>
         
         <div className="col-md-4">
-          <VoiceRecognition />
+          <VoiceAssistant />
           
           <div className="card command-section mt-3">
             <div className="card-header">
