@@ -1,16 +1,20 @@
+# backend/utils/auth_utils.py
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 import os
-from dotenv import load_dotenv
+import sys
 import logging
 
-from database.repositories.user_repository import get_user_by_id
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-# Load environment variables
-load_dotenv()
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
+
+from database.repositories.user_repository import get_user_by_id
 
 # Set up logger
 logger = logging.getLogger("tradebot.auth")
@@ -42,11 +46,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     
+    logger.debug(f"Created access token for user: {data.get('sub', 'unknown')}")
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
@@ -69,6 +74,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any
     )
     
     if not token:
+        logger.warning("No token provided")
         raise credentials_exception
     
     try:
@@ -76,17 +82,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> Dict[str, Any
         user_id = payload.get("sub")
         
         if user_id is None:
+            logger.warning("Token missing 'sub' claim")
             raise credentials_exception
             
     except JWTError as e:
-        logger.error(f"JWT decode error: {e}")
+        logger.warning(f"JWT decode error: {e}")
         raise credentials_exception
         
     user = get_user_by_id(int(user_id))
     
     if user is None:
+        logger.warning(f"User not found for ID: {user_id}")
         raise credentials_exception
         
+    logger.debug(f"Authenticated user: {user['username']}")
     return user
 
 async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme)) -> Optional[Dict[str, Any]]:
@@ -100,10 +109,12 @@ async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme
         Optional[Dict[str, Any]]: User data or None
     """
     if not token:
+        logger.debug("No token provided for optional auth")
         return None
         
     try:
         user = await get_current_user(token)
         return user
     except HTTPException:
+        logger.debug("Optional auth failed, returning None")
         return None

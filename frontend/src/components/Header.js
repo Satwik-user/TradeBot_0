@@ -1,13 +1,19 @@
-import React, { useContext } from 'react';
-import { AppContext } from '../context/AppContext';
+// frontend/src/components/Header.js
+import React from 'react';
+import { useAppContext } from '../context/AppContext';
+import { logout } from '../services/authService';
 
 const Header = () => {
-  const { user, setUser } = useContext(AppContext);
+  const { state } = useAppContext();
+  const { user, isAuthenticated } = state;
 
   const handleLogout = () => {
-    localStorage.removeItem('demoUser');
-    setUser(null);
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+    }
   };
+
+  const isDemoMode = user?.id === 1 || localStorage.getItem('demoUser');
 
   return (
     <header className="app-header">
@@ -18,16 +24,24 @@ const Header = () => {
             TradeBot
           </a>
           
-          {user && (
-            <div className="d-flex ms-auto">
+          {isAuthenticated && user && (
+            <div className="d-flex ms-auto align-items-center">
               <div className="user-info me-3 text-light">
-                <span>Welcome, {user.name}</span>
+                <span>Welcome, <strong>{user.name || user.username}</strong></span>
+                {isDemoMode && (
+                  <span className="ms-2 badge bg-warning text-dark">Demo Mode</span>
+                )}
                 <span className="ms-3 badge bg-success">
-                  ${user.balance.toFixed(2)}
+                  Balance: ${user.balance?.toFixed(2) || '10,000.00'}
                 </span>
               </div>
               
-              <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+              <button 
+                className="btn btn-outline-light btn-sm" 
+                onClick={handleLogout}
+                title="Logout"
+              >
+                <i className="fas fa-sign-out-alt me-1"></i>
                 Logout
               </button>
             </div>

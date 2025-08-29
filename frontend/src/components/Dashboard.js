@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import TradingViewChart from './TradingViewChart';
 import MarketSummary from './MarketSummary';
 import TradeForm from './TradeForm';
-import VoiceAssistant from './VoiceAssistant';
+import VoiceAssistant from './VoiceRecognition';
 import CommandExamples from './CommandExamples';
 import TradeHistory from './TradeHistory';
 import { AppContext } from '../context/AppContext';

@@ -30,18 +30,20 @@ const MarketSummary = () => {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(marketData).map(([symbol, data]) => (
-                <tr key={symbol}>
-                  <td>{symbol.replace('USDT', '')}</td>
-                  <td>${data?.price?.toLocaleString() || 'N/A'}</td>
-                  <td>{data?.change_24h ? formatChange(data.change_24h) : 'N/A'}</td>
-                  <td>{data?.volume ? `$${(data.volume / 1000000).toFixed(2)}M` : 'N/A'}</td>
-                </tr>
-              ))}
-              
-              {Object.keys(marketData).length === 0 && !loading && (
+              {marketData && Object.entries(marketData).length > 0 ? (
+                Object.entries(marketData).map(([symbol, data]) => (
+                  <tr key={symbol}>
+                    <td>{symbol.replace('USDT', '')}</td>
+                    <td>${data?.price?.toLocaleString() || 'N/A'}</td>
+                    <td>{data?.change_24h !== undefined ? formatChange(data.change_24h) : 'N/A'}</td>
+                    <td>{data?.volume ? `$${(data.volume / 1000000).toFixed(2)}M` : 'N/A'}</td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan="4" className="text-center">No market data available</td>
+                  <td colSpan="4" className="text-center">
+                    {loading ? 'Loading market data...' : 'No market data available'}
+                  </td>
                 </tr>
               )}
             </tbody>

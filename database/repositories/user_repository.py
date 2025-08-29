@@ -1,3 +1,10 @@
+# database/repositories/user_repository.py
+import sys
+import os
+
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
 from database.db_connector import execute_query, execute_transaction
 from typing import Dict, Any, List, Optional
 import logging
@@ -21,7 +28,14 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
     WHERE id = %s
     """
     
-    return execute_query(query, (user_id,), fetch_all=False)
+    try:
+        result = execute_query(query, (user_id,), fetch_all=False)
+        if result:
+            logger.debug(f"Found user by ID: {user_id}")
+        return result
+    except Exception as e:
+        logger.error(f"Error getting user by ID {user_id}: {e}")
+        return None
 
 def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
     """
@@ -39,7 +53,14 @@ def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
     WHERE username = %s
     """
     
-    return execute_query(query, (username,), fetch_all=False)
+    try:
+        result = execute_query(query, (username,), fetch_all=False)
+        if result:
+            logger.debug(f"Found user by username: {username}")
+        return result
+    except Exception as e:
+        logger.error(f"Error getting user by username {username}: {e}")
+        return None
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     """
@@ -57,7 +78,55 @@ def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     WHERE email = %s
     """
     
-    return execute_query(query, (email,), fetch_all=False)
+    try:
+        result = execute_query(query, (email,), fetch_all=False)
+        if result:
+            logger.debug(f"Found user by email: {email}")
+        return result
+    except Exception as e:
+        logger.error(f"Error getting user by email {email}: {e}")
+        return None
+
+def create_user(username: str, password_hash: str, email: str, initial_balance: float = 10000.0) -> Optional[Dict[str, Any]]:
+    """
+    Create a new user
+    
+    Args:
+        username (str): Username
+        password_hash (str): Hashed password
+        email (str): Email address
+        initial_balance (float): Initial balance in USDT
+        
+    Returns:
+        Optional[Dict[str, Any]]: Created user data or None if failed
+    """
+    query = """
+    INSERT INTO users (username, password_hash, email, balance)
+    VALUES (%s, %s, %s, %s)
+    RETURNING id, username, email, balance, created_at, updated_at
+    """
+    
+    try:
+        result = execute_query(query, (username, password_hash, email, initial_balance), fetch_all=False)
+        
+        if result:
+            logger.info(f"✅ Created new user: {username} with ID: {result['id']}")
+            
+            # Create initial USDT balance
+            try:
+                balance_query = """
+                INSERT INTO user_balances (user_id, asset, balance)
+                VALUES (%s, 'USDT', %s)
+                """
+                execute_query(balance_query, (result['id'], initial_balance))
+                logger.debug(f"Created initial USDT balance for user {result['id']}")
+            except Exception as e:
+                logger.warning(f"Could not create initial balance for user {result['id']}: {e}")
+            
+        return result
+    except Exception as e:
+        logger.error(f"Error creating user {username}: {e}")
+        return None
 
 def get_user_balances(user_id: int) -> List[Dict[str, Any]]:
     """
@@ -72,13 +141,19 @@ def get_user_balances(user_id: int) -> List[Dict[str, Any]]:
     query = """
     SELECT asset, balance, updated_at
     FROM user_balances
-    WHERE user_id = %s
+    WHERE user_id = %s AND balance > 0
     ORDER BY asset
     """
     
-    return execute_query(query, (user_id,))
+    try:
+        result = execute_query(query, (user_id,))
+        logger.debug(f"Found {len(result)} balances for user {user_id}")
+        return result if result else []
+    except Exception as e:
+        logger.error(f"Error getting balances for user {user_id}: {e}")
+        return []
 
-def get_user_balance(user_id: int, asset: str) -> Optional[Dict[str, Any]]:
+def get_user_balance(user_id: int, asset: str) -> float:
     """
     Get balance for a specific asset for a user
     
@@ -87,17 +162,22 @@ def get_user_balance(user_id: int, asset: str) -> Optional[Dict[str, Any]]:
         asset (str): Asset code (e.g., 'BTC', 'USDT')
         
     Returns:
-        Optional[Dict[str, Any]]: Balance data or None if not found
+        float: Balance amount (0.0 if not found)
     """
     query = """
-    SELECT asset, balance, updated_at
+    SELECT balance
     FROM user_balances
     WHERE user_id = %s AND asset = %s
     """
     
-    return execute_query(query, (user_id, asset), fetch_all=False)
+    try:
+        result = execute_query(query, (user_id, asset), fetch_all=False)
+        return float(result['balance']) if result else 0.0
+    except Exception as e:
+        logger.error(f"Error getting balance for user {user_id}, asset {asset}: {e}")
+        return 0.0
 
-def update_user_balance(user_id: int, asset: str, amount: float) -> Dict[str, Any]:
+def update_user_balance(user_id: int, asset: str, amount: float) -> Optional[Dict[str, Any]]:
     """
     Update a user's balance for a specific asset
     
@@ -107,7 +187,7 @@ def update_user_balance(user_id: int, asset: str, amount: float) -> Dict[str, An
         amount (float): New balance amount
         
     Returns:
-        Dict[str, Any]: Result of the update operation
+        Optional[Dict[str, Any]]: Updated balance data or None if failed
     """
     query = """
     INSERT INTO user_balances (user_id, asset, balance)
@@ -117,99 +197,40 @@ def update_user_balance(user_id: int, asset: str, amount: float) -> Dict[str, An
     RETURNING id, user_id, asset, balance, updated_at
     """
     
-    result = execute_query(query, (user_id, asset, amount, amount), fetch_all=False)
-    logger.info(f"Updated balance for user {user_id}, asset {asset}: {amount}")
-    return result
+    try:
+        result = execute_query(query, (user_id, asset, amount, amount), fetch_all=False)
+        if result:
+            logger.debug(f"Updated balance for user {user_id}, asset {asset}: {amount}")
+        return result
+    except Exception as e:
+        logger.error(f"Error updating balance for user {user_id}, asset {asset}: {e}")
+        return None
 
-def create_user(username: str, password_hash: str, email: str) -> Dict[str, Any]:
-    """
-    Create a new user
-    
-    Args:
-        username (str): Username
-        password_hash (str): Hashed password
-        email (str): Email address
-        
-    Returns:
-        Dict[str, Any]: Created user data
-    """
-    query = """
-    INSERT INTO users (username, password_hash, email)
-    VALUES (%s, %s, %s)
-    RETURNING id, username, email, balance, created_at, updated_at
-    """
-    
-    result = execute_query(query, (username, password_hash, email), fetch_all=False)
-    logger.info(f"Created new user: {username}")
-    return result
+# Test function for the repository
+def test_repository():
+    """Test the user repository functions"""
+    try:
+        # Test getting demo user
+        demo_user = get_user_by_username("demo")
+        if demo_user:
+            print(f"✅ Found demo user: {demo_user['username']}")
+            
+            # Test getting balances
+            balances = get_user_balances(demo_user['id'])
+            print(f"✅ Demo user has {len(balances)} asset balances")
+            
+            for balance in balances:
+                print(f"  - {balance['asset']}: {balance['balance']}")
+                
+            return True
+        else:
+            print("⚠️ Demo user not found")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Repository test failed: {e}")
+        return False
 
-def update_user(user_id: int, **kwargs) -> Dict[str, Any]:
-    """
-    Update user data
-    
-    Args:
-        user_id (int): User ID
-        **kwargs: Fields to update (username, email, password_hash, balance)
-        
-    Returns:
-        Dict[str, Any]: Result of the update operation
-    """
-    allowed_fields = ['username', 'email', 'password_hash', 'balance']
-    update_fields = []
-    params = []
-    
-    # Build SET clause for SQL UPDATE
-    for field, value in kwargs.items():
-        if field in allowed_fields and value is not None:
-            update_fields.append(f"{field} = %s")
-            params.append(value)
-    
-    if not update_fields:
-        return {"affected_rows": 0}
-        
-    # Add updated_at timestamp and user_id
-    update_fields.append("updated_at = CURRENT_TIMESTAMP")
-    
-    # Build the query
-    query = f"""
-    UPDATE users
-    SET {', '.join(update_fields)}
-    WHERE id = %s
-    RETURNING id, username, email, balance, created_at, updated_at
-    """
-    
-    # Add user_id as the last parameter
-    params.append(user_id)
-    
-    result = execute_query(query, tuple(params), fetch_all=False)
-    logger.info(f"Updated user {user_id}: fields {list(kwargs.keys())}")
-    return result
-
-def update_user_balance_transaction(user_id: int, asset_changes: Dict[str, float]) -> Dict[str, int]:
-    """
-    Update multiple asset balances for a user in a single transaction
-    
-    Args:
-        user_id (int): User ID
-        asset_changes (Dict[str, float]): Dict mapping assets to changes in balance
-        
-    Returns:
-        Dict[str, int]: Result of the transaction
-    """
-    queries = []
-    
-    for asset, amount in asset_changes.items():
-        query = """
-        INSERT INTO user_balances (user_id, asset, balance)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (user_id, asset)
-        DO UPDATE SET balance = user_balances.balance + %s, updated_at = CURRENT_TIMESTAMP
-        """
-        queries.append({
-            "query": query,
-            "params": (user_id, asset, amount, amount)
-        })
-    
-    result = execute_transaction(queries)
-    logger.info(f"Updated balances for user {user_id}: {asset_changes}")
-    return result
+if __name__ == "__main__":
+    print("Testing User Repository...")
+    test_repository()
