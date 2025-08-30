@@ -1,4 +1,3 @@
-// frontend/src/components/Login.js
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { login, loginDemo } from '../services/authService';
