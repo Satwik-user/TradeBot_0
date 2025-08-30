@@ -1,57 +1,41 @@
-// frontend/src/App.js
-import React, { useState } from 'react';
-import { useAppContext } from './context/AppContext';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
+// Import Pages and Components
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login'; // Use Login.js instead of LoginPage.js
 import Dashboard from './components/Dashboard';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Login from './components/Login';
-import Register from './components/Register';
-import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Import main stylesheet
 import './styles/main.css';
 
-function App() {
-  const { state } = useAppContext();
-  const { user, isAuthenticated, loading } = state;
-  const [showRegister, setShowRegister] = useState(false);
+const AppLayout = () => {
+  const location = useLocation();
+  const noLayoutPages = ['/', '/login'];
+  const isNoLayoutPage = noLayoutPages.includes(location.pathname);
 
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="app-container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          <p>Loading TradeBot...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show authentication pages if not logged in
-  if (!isAuthenticated) {
-    return (
-      <div className="app-container">
-        {showRegister ? (
-          <Register onSwitchToLogin={() => setShowRegister(false)} />
-        ) : (
-          <Login onSwitchToRegister={() => setShowRegister(true)} />
-        )}
-      </div>
-    );
-  }
-
-  // Show main dashboard if authenticated
   return (
     <div className="app-container">
-      <Header />
-      
-      <main className="app-content container-fluid">
-        <Dashboard user={user} />
+      {!isNoLayoutPage && <Header />}
+      <main className={`app-content ${isNoLayoutPage ? 'full-width' : 'container-fluid'}`}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} /> {/* This now correctly points to your Login component */}
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
       </main>
-      
-      <Footer />
+      {!isNoLayoutPage && <Footer />}
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AppLayout />
+    </Router>
   );
 }
 
