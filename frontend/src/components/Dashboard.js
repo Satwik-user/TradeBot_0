@@ -1,10 +1,8 @@
-// frontend/src/components/Dashboard.js
 import React from 'react';
 import TradingViewChart from './TradingViewChart';
 import MarketSummary from './MarketSummary';
 import TradeForm from './TradeForm';
 import VoiceAssistant from './VoiceRecognition';
-import CommandExamples from './CommandExamples';
 import TradeHistory from './TradeHistory';
 import { useAppContext } from '../context/AppContext';
 import '../styles/components/Dashboard.css';
@@ -30,30 +28,6 @@ const Dashboard = () => {
         
         <div className="col-md-4">
           <VoiceAssistant />
-          
-          <div className="card command-section mt-3">
-            <div className="card-header">
-              <h4>Voice Command Center</h4>
-            </div>
-            <div className="card-body">
-              {command && (
-                <div className="command-display mb-3">
-                  <div className="alert alert-info mb-2">
-                    <strong>You said:</strong>
-                    <div className="mt-1">"{command}"</div>
-                  </div>
-                  {response && (
-                    <div className="alert alert-success mb-2">
-                      <strong>TradeBot:</strong>
-                      <div className="mt-1">{response}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <CommandExamples />
-            </div>
-          </div>
         </div>
       </div>
       
