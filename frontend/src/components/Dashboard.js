@@ -1,15 +1,17 @@
-import React, { useContext } from 'react';
+// frontend/src/components/Dashboard.js
+import React from 'react';
 import TradingViewChart from './TradingViewChart';
 import MarketSummary from './MarketSummary';
 import TradeForm from './TradeForm';
 import VoiceAssistant from './VoiceRecognition';
 import CommandExamples from './CommandExamples';
 import TradeHistory from './TradeHistory';
-import { AppContext } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext';
 import '../styles/components/Dashboard.css';
 
-const Dashboard = (props) => {
-  const { command, response, trades, loading } = useContext(AppContext);
+const Dashboard = () => {
+  const { state } = useAppContext();
+  const { command, response, trades, loading } = state;
 
   return (
     <div className="dashboard-container">
@@ -35,15 +37,17 @@ const Dashboard = (props) => {
             </div>
             <div className="card-body">
               {command && (
-                <div className="command-display">
-                  <div className="command-item">
+                <div className="command-display mb-3">
+                  <div className="alert alert-info mb-2">
                     <strong>You said:</strong>
-                    <p>{command}</p>
+                    <div className="mt-1">"{command}"</div>
                   </div>
-                  <div className="command-item response">
-                    <strong>TradeBot:</strong>
-                    <p>{response}</p>
-                  </div>
+                  {response && (
+                    <div className="alert alert-success mb-2">
+                      <strong>TradeBot:</strong>
+                      <div className="mt-1">{response}</div>
+                    </div>
+                  )}
                 </div>
               )}
               

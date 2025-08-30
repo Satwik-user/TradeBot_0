@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { login, loginDemo } from '../services/authService';
+import { login, loginDemo } from '../services/authService'; // Fixed import path
 
 const Login = ({ onSwitchToRegister }) => {
+  const navigate = useNavigate();
   const { actions } = useAppContext();
   const [formData, setFormData] = useState({
     username: '',
@@ -35,11 +37,22 @@ const Login = ({ onSwitchToRegister }) => {
       const result = await login(formData.username, formData.password);
       
       if (result.success) {
+        // Store token in localStorage
+        localStorage.setItem('tradebot_token', result.token);
+        
+        // Update app context
         actions.login(result.user, result.token);
+        
+        // Navigate to dashboard
+        navigate('/dashboard');
+        
+        // Show success message (optional)
+        console.log('Login successful, redirecting to dashboard...');
       } else {
         setError(result.error || 'Login failed');
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
@@ -47,9 +60,33 @@ const Login = ({ onSwitchToRegister }) => {
   };
 
   const handleDemoLogin = () => {
-    const result = loginDemo();
-    if (result.success) {
-      actions.loginDemo(result.user);
+    try {
+      const result = loginDemo();
+      if (result.success) {
+        // Store demo flag in localStorage
+        localStorage.setItem('tradebot_demo', 'true');
+        localStorage.setItem('tradebot_token', 'demo_token');
+        
+        // Update app context
+        actions.loginDemo(result.user);
+        
+        // Navigate to dashboard
+        navigate('/dashboard');
+        
+        console.log('Demo login successful, redirecting to dashboard...');
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+      setError('Demo login failed. Please try again.');
+    }
+  };
+
+  const handleRegisterClick = () => {
+    if (onSwitchToRegister) {
+      onSwitchToRegister();
+    } else {
+      // If no onSwitchToRegister prop, navigate to register route
+      navigate('/register');
     }
   };
 
@@ -76,6 +113,7 @@ const Login = ({ onSwitchToRegister }) => {
                 placeholder="Enter your username"
                 disabled={isLoading}
                 required
+                autoComplete="username"
               />
             </div>
 
@@ -91,11 +129,13 @@ const Login = ({ onSwitchToRegister }) => {
                 placeholder="Enter your password"
                 disabled={isLoading}
                 required
+                autoComplete="current-password"
               />
             </div>
 
             {error && (
               <div className="alert alert-danger" role="alert">
+                <i className="fas fa-exclamation-triangle me-2"></i>
                 {error}
               </div>
             )}
@@ -111,7 +151,10 @@ const Login = ({ onSwitchToRegister }) => {
                   Signing In...
                 </>
               ) : (
-                'Sign In'
+                <>
+                  <i className="fas fa-sign-in-alt me-2"></i>
+                  Sign In
+                </>
               )}
             </button>
           </form>
@@ -134,10 +177,23 @@ const Login = ({ onSwitchToRegister }) => {
             <span className="text-muted">Don't have an account? </span>
             <button 
               type="button"
-              onClick={onSwitchToRegister}
-              className="btn btn-link p-0"
+              onClick={handleRegisterClick}
+              className="btn btn-link p-0 text-decoration-none"
+              disabled={isLoading}
             >
               Sign Up
+            </button>
+          </div>
+
+          {/* Optional: Add forgot password link */}
+          <div className="text-center mt-2">
+            <button 
+              type="button"
+              className="btn btn-link btn-sm text-muted"
+              onClick={() => console.log('Forgot password clicked')}
+              disabled={isLoading}
+            >
+              Forgot Password?
             </button>
           </div>
         </div>
