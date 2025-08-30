@@ -1,62 +1,67 @@
+// frontend/src/services/apiService.js
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000", // adjust if backend runs elsewhere
-});
+const API_BASE = "http://localhost:8000"; // ⚡ adjust if backend runs elsewhere
 
-// 🔹 Run analysis + AI insight
-export const analyzeSymbol = async (symbol, timeframe = "1h") => {
-  try {
-    const response = await api.post(`/analysis/${symbol}?timeframe=${timeframe}`);
-    return response.data.result;
-  } catch (error) {
-    console.error("Error analyzing symbol:", error);
-    throw error;
-  }
+// =============================
+// 📊 Technical Analysis Services
+// =============================
+export const getTechnicalIndicators = async (symbol, timeframe) => {
+  const res = await axios.get(
+    `${API_BASE}/technical/indicators/${symbol}?timeframe=${timeframe}`
+  );
+  return res.data;
 };
 
-// 🔹 Execute trade
+export const getPatternDetection = async (symbol, timeframe) => {
+  const res = await axios.get(
+    `${API_BASE}/technical/patterns/${symbol}?timeframe=${timeframe}`
+  );
+  return res.data;
+};
+
+export const getTechnicalAnalysis = async (symbol, timeframe) => {
+  const res = await axios.get(
+    `${API_BASE}/technical/analysis/${symbol}?timeframe=${timeframe}`
+  );
+  return res.data;
+};
+
+// =============================
+// 🤖 LLM-Powered Insights
+// =============================
+export const getLLMAnalysis = async (symbol, timeframe) => {
+  const res = await axios.get(
+    `${API_BASE}/technical/llm-analysis/${symbol}?timeframe=${timeframe}`
+  );
+  return res.data;
+};
+
+// =============================
+// 💹 Trading APIs
+// =============================
 export const executeTrade = async (tradeData) => {
-  try {
-    const response = await api.post("/trades/execute", tradeData);
-    return response.data;
-  } catch (error) {
-    console.error("Error executing trade:", error);
-    throw error;
-  }
+  const res = await axios.post(`${API_BASE}/trades/execute`, tradeData);
+  return res.data;
 };
 
-// 🔹 Fetch user trade history
-export const getUserTrades = async (userId) => {
-  try {
-    const response = await api.get(`/trades/${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching user trades:", error);
-    throw error;
-  }
+export const getUserTrades = async () => {
+  const res = await axios.get(`${API_BASE}/trades/history`);
+  return res.data;
 };
 
-// 🔹 Process voice command
+// =============================
+// 🗣️ Voice Assistant
+// =============================
 export const processVoiceCommand = async (command) => {
-  try {
-    const response = await api.post("/voice/command", { command });
-    return response.data;
-  } catch (error) {
-    console.error("Error processing voice command:", error);
-    throw error;
-  }
+  const res = await axios.post(`${API_BASE}/voice/command`, { command });
+  return res.data;
 };
 
-// 🔹 Fetch live market data
+// =============================
+// 📈 Market Data
+// =============================
 export const getMarketData = async (symbol) => {
-  try {
-    const response = await api.get(`/market/${symbol}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching market data:", error);
-    throw error;
-  }
+  const res = await axios.get(`${API_BASE}/market/${symbol}`);
+  return res.data;
 };
-
-export default api;

@@ -16,4 +16,5 @@ const AnalysisResult = ({ analysis }) => {
   );
 };
 
+
 export default AnalysisResult;

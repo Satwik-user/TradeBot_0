@@ -7,6 +7,8 @@ import VoiceAssistant from './VoiceRecognition';
 import TradeHistory from './TradeHistory';
 import { useAppContext } from '../context/AppContext';
 import '../styles/components/Dashboard.css';
+import LLMInsights from './LLMInsights';
+
 
 const Dashboard = () => {
   const { state } = useAppContext();
@@ -52,6 +54,7 @@ const Dashboard = () => {
         <div className="col-md-4">
           <TradeHistory trades={trades} />
         </div>
+        <LLMInsights symbol="AAPL" timeframe="1h" />
       </div>
     </div>
   );

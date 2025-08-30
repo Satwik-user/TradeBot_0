@@ -1,0 +1,32 @@
+.llm-insights {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.llm-insights h2 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.insight-box {
+  background: #f4f7fa;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.insight-meta {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  color: #666;
+}
+
+.llm-insights.error {
+  color: red;
+}

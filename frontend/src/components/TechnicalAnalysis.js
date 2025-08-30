@@ -1,7 +1,12 @@
 // frontend/src/components/TechnicalAnalysis.js
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { getTechnicalIndicators, getPatternDetection, getTechnicalAnalysis } from '../services/apiService';
+import { 
+  getTechnicalIndicators, 
+  getPatternDetection, 
+  getTechnicalAnalysis,
+  getLLMAnalysis
+} from '../services/apiService';
 import TradingViewChart from './TradingViewChart';
 import IndicatorPanel from './IndicatorPanel';
 import PatternDetection from './PatternDetection';
@@ -15,6 +20,7 @@ const TechnicalAnalysis = () => {
   const [indicators, setIndicators] = useState(null);
   const [patterns, setPatterns] = useState([]);
   const [analysis, setAnalysis] = useState(null);
+  const [llmAnalysis, setLlmAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -28,36 +34,27 @@ const TechnicalAnalysis = () => {
   
   useEffect(() => {
     fetchTechnicalData();
-    
-    // Set up periodic refresh
-    const interval = setInterval(fetchTechnicalData, 60000); // Every minute
+    const interval = setInterval(fetchTechnicalData, 60000);
     return () => clearInterval(interval);
   }, [selectedSymbol, activeTimeframe]);
   
   const fetchTechnicalData = async () => {
     if (!selectedSymbol) return;
-    
     setLoading(true);
     setError('');
     
     try {
-      const [indicatorsData, patternsData, analysisData] = await Promise.allSettled([
+      const [indicatorsData, patternsData, analysisData, llmData] = await Promise.allSettled([
         getTechnicalIndicators(selectedSymbol, activeTimeframe),
         getPatternDetection(selectedSymbol, activeTimeframe),
-        getTechnicalAnalysis(selectedSymbol, activeTimeframe)
+        getTechnicalAnalysis(selectedSymbol, activeTimeframe),
+        getLLMAnalysis(selectedSymbol, activeTimeframe)
       ]);
       
-      if (indicatorsData.status === 'fulfilled') {
-        setIndicators(indicatorsData.value);
-      }
-      
-      if (patternsData.status === 'fulfilled') {
-        setPatterns(patternsData.value);
-      }
-      
-      if (analysisData.status === 'fulfilled') {
-        setAnalysis(analysisData.value);
-      }
+      if (indicatorsData.status === 'fulfilled') setIndicators(indicatorsData.value);
+      if (patternsData.status === 'fulfilled') setPatterns(patternsData.value);
+      if (analysisData.status === 'fulfilled') setAnalysis(analysisData.value);
+      if (llmData.status === 'fulfilled') setLlmAnalysis(llmData.value);
       
     } catch (err) {
       console.error('Error fetching technical data:', err);
@@ -88,7 +85,6 @@ const TechnicalAnalysis = () => {
   
   return (
     <div className="technical-analysis">
-      {/* Header */}
       <div className="card mb-3">
         <div className="card-body">
           <div className="d-flex justify-content-between align-items-center">
@@ -121,9 +117,7 @@ const TechnicalAnalysis = () => {
         </div>
       </div>
       
-      {/* Main Content */}
       <div className="row">
-        {/* Chart Section */}
         <div className="col-lg-8">
           <div className="card mb-3">
             <div className="card-body p-0">
@@ -136,25 +130,12 @@ const TechnicalAnalysis = () => {
               />
             </div>
           </div>
-          
-          {/* Patterns Section */}
-          <PatternDetection 
-            patterns={patterns}
-            loading={loading}
-          />
+          <PatternDetection patterns={patterns} loading={loading} />
         </div>
         
-        {/* Indicators & Analysis Section */}
         <div className="col-lg-4">
-          <IndicatorPanel 
-            indicators={indicators}
-            loading={loading}
-          />
-          
-          <AnalysisPanel 
-            analysis={analysis}
-            loading={loading}
-          />
+          <IndicatorPanel indicators={indicators} loading={loading} />
+          <AnalysisPanel analysis={analysis} llmAnalysis={llmAnalysis} loading={loading} />
         </div>
       </div>
     </div>
