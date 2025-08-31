@@ -25,7 +25,7 @@ const LandingPage = () => {
           </button>
         </div>
         <div className="hero-image">
-          <img src="/images/robot-assistant.png" alt="AI Trading Robot" />
+          <img src="/assets/images/robot-assistant.png" alt="AI Trading Robot" />
         </div>
       </header>
 
