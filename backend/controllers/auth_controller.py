@@ -15,7 +15,7 @@ from database.repositories.user_repository import (
     get_user_by_id,
     create_user as db_create_user
 )
-from utils.auth_utils import (
+from backend.utils.auth_utils import (
     create_access_token,
     get_current_user
 )

@@ -4,10 +4,10 @@ import json
 import logging
 from typing import Dict, Any, Optional
 
-from services.nlp_service import analyze_command
-from services.trading_service import get_market_data, simulate_trade
-from services.voice_service import generate_response
-from utils.auth_utils import get_current_user_optional
+from backend.services.nlp_service import analyze_command
+from backend.services.trading_service import get_market_data, simulate_trade
+from backend.services.voice_service import generate_response
+from backend.utils.auth_utils import get_current_user_optional
 from database.repositories.market_repository import log_voice_command
 
 # Set up logger

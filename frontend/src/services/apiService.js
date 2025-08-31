@@ -32,10 +32,11 @@ export const getTechnicalAnalysis = async (symbol, timeframe) => {
 // =============================
 export const getLLMAnalysis = async (symbol, timeframe) => {
   const res = await axios.get(
-    `${API_BASE}/technical/llm-analysis/${symbol}?timeframe=${timeframe}`
+    `${API_BASE}api/llm/analysis/${symbol}?timeframe=${timeframe}`
   );
   return res.data;
 };
+
 
 // =============================
 // 💹 Trading APIs

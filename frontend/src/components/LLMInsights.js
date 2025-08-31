@@ -15,6 +15,7 @@ const LLMInsights = ({ symbol = "AAPL", timeframe = "1h" }) => {
         const data = await getLLMAnalysis(symbol, timeframe);
         setInsight(data);
       } catch (err) {
+        console.error("LLM API error:", err);
         setError("Failed to load LLM insights");
       } finally {
         setLoading(false);

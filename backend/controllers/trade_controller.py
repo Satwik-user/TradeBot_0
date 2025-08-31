@@ -3,8 +3,8 @@ from pydantic import BaseModel, Field
 import logging
 from typing import Dict, Any, List, Optional
 
-from services.trading_service import get_market_data, simulate_trade
-from utils.auth_utils import get_current_user, get_current_user_optional
+from backend.services.trading_service import get_market_data, simulate_trade
+from backend.utils.auth_utils import get_current_user, get_current_user_optional
 from database.repositories.trade_repository import (
     create_trade as db_create_trade,
     get_user_trades,
